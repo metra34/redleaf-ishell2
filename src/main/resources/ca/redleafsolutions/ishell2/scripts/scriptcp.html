@@ -1,0 +1,229 @@
+<html>
+<head>
+	<title>IShell Scripts Control Panel</title>
+<link
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+<style>
+html, body, .container {
+	height: 100%;
+}
+
+.xpage-header {
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+#myTabContent {
+	white-space: pre;
+	width: 100%;
+	overflow: auto;
+	_height: 100%;
+	bottom: 0px;
+}
+#editor-text {
+	width: 100%;
+	overflow: auto;
+	height: 100%;
+}
+</style>
+</head>
+<body>
+	<div class="container-fluid">
+		<div class="page-header">
+			<h3>
+				IShell Scripts Control Panel
+			</h3>
+		</div>
+		<div id="output-row" class="row">
+			<div class="col-md-4">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						Language
+					</div>
+					<div class="panel-body">
+						<div class="">
+							<select class="form-control" onchange='changeLang(event)'>
+#set ($currlang = ${ishell.engine().lang()})
+#foreach ($lang in ${ishell.engine().langs()})
+								<option #if ($lang["language-name"] == $currlang["language-name"]) SELECTED #end>$lang["language-name"]</option>
+#end
+							</select>
+							<div>
+								<span class="badge">$currlang["engine-name"] $currlang["engine-version"]</span>
+								<span class="badge pull-right">$currlang["language-name"] $currlang["language-version"]</span> 
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						Scripts
+						<span class="pull-right"><i class="glyphicon glyphicon-plus text-primary" onclick="createFile()"></i></span>	
+					</div>
+					<div class="panel-body">
+						<div class="list-group">
+#foreach ($script in $scripts)
+							<li class="list-group-item">
+#if ($script.isDirectory())
+								<a href="#" onclick="cd('$script.name')"><span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span></a> 
+#else
+								<a href="#" onclick="edit('$script.name')"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
+								<a href="#" onclick="run('$script.name')"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></a>
+#end
+								$script.name
+								<span class="pull-right"><i class="glyphicon glyphicon-remove text-danger" onclick="deleteFile('$script.name')"></i></span>	
+							</li>
+#end
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-8">
+				<div class="nav">
+					<div class="navbar-inner">
+						<ul class="nav nav-tabs">
+							<li class="active"><a href="#output" data-toggle="tab">Output
+									<select id="output-format">
+										<option value="json">JSON</option>
+										<option value="html">HTML</option>
+										<option value="txt">TEXT</option>
+								</select>
+									<button class="btn btn-xs" onclick="$('#output').html('')">Clear</button>
+							</a></li>
+							<li><a href="#editor" data-toggle="tab">Editor
+								<span id="script-name"></span>
+								<button id="save-btn" class="btn btn-xs btn-primary" disabled onclick="save ()"><span class="glyphicon glyphicon-save"></span></button>
+								</a>
+							</li>
+						</ul>
+					</div>
+					<div class="tab-content">
+						<div class="tab-pane fade active" id="output" role="tabpanel">
+							Some content</div>
+						<div class="tab-pane fade" id="editor" role="tabpanel">
+							<textarea id="editor-text" onkeydown='$("#save-btn").prop ("disabled", false)'></textarea>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript"
+		src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+	<script type="text/javascript"
+		src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+	<script type="text/javascript">
+		var scriptedited = null;
+		
+		$(document).ready(function () {
+			$("#save-btn").hide ();
+			
+			$(window).resize (function () {
+				adjustEditorSize ();
+			});
+		});
+		
+		function changeLang (event) {
+			console.log (event, $(event.target).val ());
+			$.ajax ({
+				url: "/ishell/engine/changelang/" + escape ($(event.target).val ())
+			}).success (function (data) {
+				location.reload ();
+			}).fail (function (data) {
+				console.error (data);
+			});
+		}
+		
+		function cd (dir) {
+			$.ajax ({
+				url: "/script/cd/" + escape (dir)
+			}).success (function (data) {
+				location.reload ();
+			}).fail (function (data) {
+				console.error (data);
+			});
+		}
+		
+		function deleteFile (script) {
+			if (confirm ("You are about to delete a file. This action can not be undone. Are you sure?")) {
+				$.ajax ({
+					url: "/script/delete/" + escape (script)
+				}).success (function (data) {
+					location.reload ();
+				}).fail (function (data) {
+					console.error (data);
+				});
+			}
+		}
+		
+		function getScriptURL (script) {
+			var p = script.lastIndexOf (".");
+			console.log (script, p);
+			var url = "/";
+			if (p > 0) {
+				url += escape (script.substr (0, p)) + "/" + escape (script.substr (p+1));
+			} else {
+				url += escape (script);
+			}
+			return url
+		}
+		function run (script) {
+			$("#output").append ('<p><div class="text-primary">Excuting ' + script + '</div>');
+			var url = "/script/run" + getScriptURL (script);
+			$.ajax ({
+				url: url + "." + $("#output-format").val ()
+			}).success (function (data) {
+				console.log (data);
+				$("#output").append ('<div class="text-default">' + data + '</div>');
+				$('.nav-tabs a[href="#output"]').tab('show');
+			}).fail (function (data) {
+				console.error (data);
+				$("#output").append ('<div class="text-danger">' + data.responseText + '</div>');
+			});
+		}
+		
+		function edit (script) {
+			console.log ("edit", script);
+			var url = "/script/content" + getScriptURL (script);
+			$.ajax ({
+				url: url + ".txt"
+			}).success (function (data) {
+				console.log (data);
+				$("#editor-text").val (data);
+				$("#script-name").html (" - " + script);
+				$("#save-btn").show ();
+				$('.nav-tabs a[href="#editor"]').tab('show');
+				scriptedited = script;
+				setTimeout (adjustEditorSize, 500);
+			}).fail (function (data) {
+				console.error (data);
+				$("#output").append ('<div class="text-danger">' + data.responseText + '</div>');
+			});
+		}
+		
+		function adjustEditorSize () {
+			$("#editor-text").height ($("#editor-text").height () - $(".container-fluid").height () + $("body").height () - 10);
+		}
+		
+		function save () {
+			console.log ("saving", scriptedited);
+			$.ajax ({
+				url: "/script/save.json",
+				xxmethod: "post",
+				data: {
+					content: $("#editor-text").val (),
+					filename: scriptedited
+				}
+			}).success (function (data) {
+				console.log (data);
+				$("#save-btn").prop ("disabled", true);
+			}).fail (function (data) {
+				console.error (data);
+				$("#output").append ('<div class="text-danger">' + data.responseText + '</div>');
+			});
+		}
+	</script>
+</body>
+</html>

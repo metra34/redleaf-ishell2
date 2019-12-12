@@ -1,0 +1,197 @@
+<!DOCTYPE "html">
+<html lang="en">
+	<head>
+		<title>iShell Unit Testing</title>
+		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
+		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
+		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+		
+		<script type="application/javascript">
+			var tests = {};
+		</script>
+	</head>
+	
+	<body>
+		<div class="container theme-showcase" role="main">
+			<div class="page-header">
+				<h3>iShell UTest</h3>
+			</div>
+
+			#foreach ($testname in $tests)
+			#set ($test = $utest.get($testname))
+			<div class="row">
+				<div class="col-sm-12">
+					<div class="panel panel-default" id="panel-${testname}">
+						<div class="panel-heading">
+							<h3 class="panel-title"><strong><i class="fa fa-arrow-circle-right"></i> ${testname}</strong>
+							<div class="pull-right">
+								<span id="results-${testname}"></span>
+								<span>&nbsp;</span>
+								<span class="badge"> ${test.tests().size()} </span>
+							</div></h3>
+						</div>
+						<div class="panel-body">
+							<!-- div class="well" -->
+							<div class="row">
+								<div class="col-lg-9 col-md-9 col-sm-6 col-xs-6">
+									${test.name()}
+								</div>
+								<div class="col-lg-3 col-md-3 col-sm-6 col-xs-6">
+									<div class="btn-group pull-right" role="group">
+										<button type="button" class="btn btn-primary" testsuite-name="${testname}" onclick="runtest(this)" id="btn-run-${testname}">
+											<i class="fa fa-play"></i>
+										</button>
+										<button type="button" class="btn btn-default" testsuite-name="${testname}" onclick="toggle(this)" id="btn-toggle-${testname}">
+											<i class="fa fa-caret-down"></i>
+										</button>
+									</div>
+								</div>
+							</div>
+							<ul class="list-group" id="lst-${testname}">
+								#foreach (${t} in ${test.tests()})
+								<li class="list-group-item">
+									${t.getName()} #if (${t.getName()} != ${t.getCommand()})<small class="text-muted">${t.getCommand()}</small>#end
+								</li>
+								#end
+							</ul>
+							<!-- /div -->
+						</div>
+					</div>
+				</div>
+			</div>
+			<script type="application/javascript">
+				tests["${testname}"] = ${test.toJSON()};
+			</script>
+			#end
+		</div>
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" type="text/javascript"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js" type="text/javascript"></script>
+		<script type="text/javascript">
+			$(document).ready(function() {
+				$("ul").hide();
+				listTests ();
+			});
+
+			function listTests () {
+				$(".list-group").each (function (a, b) {
+					var testname = $(b).prop ('id');
+					testname = testname.substring ('lst-'.length);
+					console.log (name, b);
+				});
+			}
+			
+			function toggle(o) {
+				var name = $(o).attr('testsuite-name');
+				var div = $("#lst-" + name);
+				var visible = div.is(":visible");
+
+				if (visible) {
+					$("#btn-toggle-" + name).html('<i class="fa fa-caret-down"></i>');
+					div.hide();
+				} else {
+					$("#btn-toggle-" + name).html('<i class="fa fa-caret-up"></i>');
+					div.show();
+				}
+			}
+
+			function runtest(o) {
+				var name = $(o).attr('testsuite-name');
+				var button = $("#btn-run-" + name);
+
+				$.ajax({
+					url : "/utest/run/" + name + ".json",
+					type : 'GET',
+					dataType : 'json',
+				}).done(function(data) {
+					$("#panel-" + name).removeClass("panel-default");
+					if (data.pass) {
+						$("#panel-" + name).addClass("panel-success");
+					} else {
+						$("#panel-" + name).addClass("panel-danger");
+					}
+					button.html('<i class="fa fa-play"></i>');
+					button.toggleClass("disabled");
+
+					$("#results-" + name).html('<i class="fa fa-clock-o"></i> ' + formatDuration(data.duration));
+					console.log(data);
+
+					renderResults(data.tests, $("#lst-" + name));
+				}).fail(function(data) {
+					$("#panel-" + name).removeClass("panel-default");
+					$("#panel-" + name).addClass("panel-danger");
+					button.html('<i class="fa fa-play"></i>');
+					button.toggleClass("disabled");
+					console.error(data);
+				});
+
+				button.html('<i class="fa fa-spinner fa-spin"></i>');
+				button.toggleClass("disabled");
+			}
+
+			function formatDuration(d) {
+				var degree = Math.ceil(Math.log10(d));
+				var units;
+				if (degree < 0) {
+					d = Math.round(d * 1000.);
+					units = "usec";
+					degree += 3;
+				} else {
+					if (degree > 3) {
+						unit = "sec";
+						d = Math.round(d / 1000.);
+						degree -= 3;
+					} else {
+						unit = "ms";
+					}
+				}
+
+				d = Math.round(d * 100) / 100.;
+				return d + " " + unit;
+			}
+
+			function renderResults(tests, div) {
+				div.html("");
+				for (var tindex in tests) {
+					var test = tests[tindex];
+console.log (tindex, test);
+					s = '<li class="list-group-item';
+					if (!test.pass) {
+						s += " list-group-item-Danger";
+					} else if (test.expect && (test.expect.length > 0)) {
+						s += " list-group-item-success";
+					}
+					s += '"><div class="row">';
+					s += test.name;
+					s += "<div class='pull-right'>";
+					s += "<i class='fa fa-clock-o'></i> " + (Math.round(test.duration * 100) / 100.) + " ms";
+					s += " <button class='btn btn-primary btn-xs' onclick='executeCommnad(\"" + test.cmd + "\")'><i class='fa fa-play'></i></button>";
+					s += "</div>";
+					s += '<div><small class="text-muted"><i class="fa fa-arrow-left"></i> ' + htmlEncode (test.cmd) + '</small><div>';
+					if (test.result) {
+						s += '<div><small class="text-muted"><i class="fa fa-arrow-right"></i> ' + htmlEncode (test.result) + '</small><div>';
+					}
+					if (!test.pass) {
+						for (var i in test.expect) {
+							s += '<div><small class="text-muted"><i class="fa fa-arrow-up"></i> ' + htmlEncode (test.expect[i]) + '</small><div>';
+						}
+					}
+					s += '</div></li>';
+
+					div.append(s);
+				}
+			}
+
+			function executeCommnad(cmd) {
+				cmd = cmd.split(" ").join("/");
+				if (cmd.indexOf ("/") != 0)
+					cmd = "/" + cmd;
+				window.open(cmd, '_blank');
+			}
+			
+			function htmlEncode(value){
+				return $('<div/>').text(value).html();
+			}
+		</script>
+	</body>
+</html>

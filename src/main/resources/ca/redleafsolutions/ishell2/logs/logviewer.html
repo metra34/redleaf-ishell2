@@ -1,0 +1,163 @@
+<html>
+<head>
+<link
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+	rel="stylesheet">
+<style>
+html, body, .container {
+	height: 100%;
+}
+
+.xpage-header {
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+#output {
+	white-space: pre;
+	width: 100%;
+	overflow: auto;
+	height: 100%;
+	width: 100%;
+}
+</style>
+</head>
+<body>
+	<div class="container-fluid">
+		<div class="page-header">
+			<h3>
+				Log file filter <select onchange="loadLogFile($(this).val())">
+					<option value="">Select LOG file...</option> #foreach ($file in $logfiles)
+					<option value="${file.name}">${file.name}
+						(${file.length()})</option>#end
+				</select>
+			</h3>
+		</div>
+		<div id="output-row" class="row">
+			<div class="col-xs-8">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<div id="output"></div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-4">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						Including Text <span class="pull-right"><input
+							type="checkbox" id="show-all" onclick="showFullLog()">Show
+							All</span>
+					</div>
+					<div class="panel-body">
+						<textarea id="includes" onkeydown="handleFilterKeyPress(event)"
+							placeholder="Include" style="height: 200px; width: 100%"></textarea>
+					</div>
+				</div>
+				<div class="panel panel-default">
+					<div class="panel-heading">Excluding Text</div>
+					<div class="panel-body">
+						<textarea id="excludes" onkeydown="handleFilterKeyPress(event)"
+							placeholder="Exclude" style="height: 200px; width: 100%"></textarea>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript"
+		src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+	<script type="text/javascript"
+		src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+	<script type="text/javascript">
+		var lines = [];
+		$(document).ready(
+				function () {
+					$("textarea").attr("disabled", "disabled");
+					$("input[type='checkbox']").attr("disabled", "disabled");
+					$("#output-row").height(
+							$("body").height() - $(".page-header").height() - 120);
+				});
+
+		function loadLogFile (fname) {
+			$.ajax({
+				url : "/log/read/" + fname
+			}).done(
+					function (data) {
+						$("textarea").attr("disabled", null);
+						$("input[type='checkbox']").attr("disabled", null);
+						lines = data.split("\n");
+						$("#output").html(
+								"Read " + fname + " log file. " + data.length
+										+ " bytes long, " + lines.length + " lines");
+						$("#output").append("<br>Enter filter text to see results");
+						if ($("#includes").val() == "")
+							$("#includes").val("[SEVERE]\n");
+						$("#includes").focus();
+						handleFilterChange();
+					});
+		}
+
+		function handleFilterKeyPress (event) {
+//			console.log(event.which, event.key);
+			if ((event.which == 13) || (event.which == 9)) {
+				handleFilterChange();
+			}
+		}
+		function handleFilterChange () {
+			$("#output").html("");
+			var incl = $("#includes").val().trim().split("\n");
+			for ( var i in incl) {
+				incl[i] = incl[i].trim();
+			}
+			while (incl.indexOf("") >= 0) {
+				incl.splice(incl.indexOf(""), 1);
+			}
+
+			var excl = $("#excludes").val().trim().split("\n");
+			for ( var i in excl) {
+				excl[i] = excl[i].trim();
+			}
+			while (excl.indexOf("") >= 0) {
+				excl.splice(excl.indexOf(""), 1);
+			}
+
+			for ( var i in lines) {
+				var line = lines[i];
+				if (line.trim() != "") {
+					var linelow = line.toLowerCase();
+					for ( var inc in incl) {
+						var inctext = incl[inc].toLowerCase();
+						if (linelow.indexOf(inctext) >= 0) {
+							var exclude = false;
+							for ( var exc in excl) {
+								var exctext = excl[exc].toLowerCase();
+								if (linelow.indexOf(exctext) >= 0) {
+									exclude = true;
+								}
+							}
+							if (!exclude)
+								$("#output").append("\n" + htmlEncode(line.trim()));
+						}
+					}
+				}
+			}
+		}
+		function htmlEncode (value) {
+			return $('<div/>').text(value).html();
+		}
+		function showFullLog () {
+			if ($("#show-all").is(":checked")) {
+				$("textarea").attr("disabled", "disabled");
+				$("#output").html("");
+				for ( var i in lines) {
+					$("#output").append("\n" + htmlEncode(lines[i].trim()));
+				}
+			} else {
+				$("textarea").attr("disabled", null);
+				handleFilterChange();
+			}
+		}
+	</script>
+</body>
+</html>

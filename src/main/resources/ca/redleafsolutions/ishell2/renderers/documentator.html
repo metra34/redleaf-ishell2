@@ -1,0 +1,225 @@
+<html lang="en">
+	<head>
+		<title>API documentation for ${class}</title>
+		
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+
+	</head>
+	<body>
+		<div class="container-fluid">
+			<div class="navbar navbar-fluid-fixed">
+				<h3>Class ${class.simpleName} (${class.package})
+				<div class="pull-right">
+					<select onchange="gotoCommand(this)">
+						<option value="">Go to...</option>
+						#foreach ($i in $methods)
+						<option value="$i.name">$i.name</option>
+						#end
+					</select>
+
+					<select id="format" onchange="changeFormat()">
+						<option value="">Default</option>
+						<option value="json">JSON</option>
+						<option value="html">HTML</option>
+						<option value="txt">Text</option>
+						<option value="xml">XML</option>
+					</select>
+				</div>
+				</h3>
+			</div>
+			
+			#foreach ($i in $methods)
+			<a name="$i.name"></a>
+			<div class="row">
+				<div class="col-sm-12">
+					<div class="panel panel-primary">
+						<div class="panel-heading">
+							<h3 class="panel-title"><strong><i class="fa fa-arrow-circle-right"></i> ${i.method.name}</strong> #if (${i.description}) <span class="text-right pull-right">${i.description}</span>#end </h3>
+						</div>
+						<div class="panel-body">
+							#set ($params = ($i.parameters.size() > 0))
+							
+							<div class="row">
+							#if ($params) <div class="col-xs-8">#else <div class="col-xs-12">#end
+									<div class="well">
+										<i class="fa fa-code fa-2x pull-right"></i>
+										<a href="#" id="${i.name}-path-url" class="path-url" target="_blank"></a>
+										#if ($params)
+										<br><i> -- or -- </i>
+										<br>
+										<a href="#" id="${i.name}-param-url" class="param-url" target="_blank"></a>
+										#end
+									</div>
+								</div>
+								#if ($params)
+								<div class="col-xs-4">
+									#set ($index = 0)
+									#foreach ($param in $i.parameters)
+									<div class="form-group form-inline" id="${i.name}-${param.name}">
+										<label class="text-right" for="${i.name}-${param.name}-field" style="test-align: right">${param.name}</label>
+										<input type="text" class="form-control pull-right ${i.name}-param" id="${i.name}-${param.name}-field" placeholder="${param.description}"
+											onkeyup="updateParam(event)" data-param="$param.name" data-command="$i.name" data-description="$param.description" data-param-index="$index">
+									</div>
+										#set ($index = $index+1)
+									#end
+								</div>
+								#end
+							</div>
+							
+							<h4><i class="fa fa-reply"></i> #if ($i.retType.cls == "void")
+							<span class="text-muted">No return value</span>
+							#else
+							Return Type '$i.retType.cls'
+							#if (!$i.retType.primitive) ($i.retType.pkg) #if ($i.retType.drilldown) <span class="pull-right"><a class="drilldownurl" id="${i.name}-drilldown">Drill Down</a></span>#end
+							#end
+							#end </h4>
+
+							#if ($i.exceptions.size() > 0)
+							<h4><i class="fa fa-exclamation-triangle"></i> Possible Errors</h4>
+							#foreach ($j in $i.exceptions)
+							<dd>
+								$j.simpleName
+							</dd>
+							#end
+							#end
+
+							<div class="pull-right">
+								<i class="fa fa-folder"></i> Defined in $i.method.declaringClass.simpleName ($i.method.declaringClass.package.name)
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			#end
+			#foreach ($i in $fields)
+			<li>
+				Field $i.name $i
+			</li>
+			#end
+			#foreach ($i in $annotations)
+			<li>
+				Annotation $i.name $i
+			</li>
+			#end
+		</div>
+		</div>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+		<script type="text/javascript">
+			var ownurl;
+			var format = "";
+			
+			$(document).ready(function() {
+				ownurl = location.href;
+				var pos = ownurl.lastIndexOf(".");
+				if (pos > 0) {
+					ownurl = ownurl.substr(0, pos) + "/";
+				}
+				$(".ownurl").html(ownurl);
+
+				var srch = location.search;
+				if (srch.startsWith ("?"))
+					srch = srch.substr (1);
+				var lst = srch.split ("&");
+				for (var i1 in lst) {
+					var kv = lst[i1];
+					var key = kv.split("=")[0].toLowerCase ();
+					if (key === "format") {
+						format = kv.split("=")[1].toLowerCase ();
+						$("#format").val (format);
+						$(".format-suffix").html ("." + format);
+					}
+				}
+				
+				updatePathURLs ();
+				updateParamURLs ();
+			});
+			
+			function changeFormat () {
+				var fstr = "";
+				if ($("#format").val () !== "") {
+					fstr = "?format=" + $("#format").val ();
+				}
+				
+				location.href = ownurl.substr (0, ownurl.length - 1) + ".doc" + fstr;
+			}
+			
+			function updatePathURLs () {
+				$(".path-url").each (function (a, b) {
+					updatePathURL ($(b).attr("id"));
+				});
+			}
+			function updatePathURL (id) {
+				var cmd = id.substr (0, id.length - "-path-url".length)
+				var s = ownurl + cmd;
+				$("input[data-command='" + cmd + "']").each (function (a, b) {
+					var paramname = $(b).attr ("data-param");
+					var paramvalue = $("#" + cmd + "-" + paramname + "-field").val ();
+//					console.log (cmd, paramname, paramvalue, "#" + cmd + "-" + paramname + "-field");
+					if ((paramvalue == null) || (paramvalue == "")) {
+						paramvalue = "&lt;" + paramname + "&gt;";
+					}
+					s += "/" + paramvalue;
+				});
+				
+				var ddurl = s;
+				if (format !== "") {
+					s += "." + format;
+					ddurl += ".doc";
+				}
+				$("#" + id).attr ("href", s);
+				$("#" + id).html (s);
+
+				$("#" + cmd + "-drilldown").attr ("href", ddurl);
+			}
+			
+			function updateParamURLs () {
+				$(".param-url").each (function (a, b) {
+					updateParamURL ($(b).attr("id"));
+				});
+			}
+			function updateParamURL (id) {
+				var cmd = id.substr (0, id.length - "-param-url".length)
+				var s = ownurl + cmd;
+				if (format !== "") {
+					s += "." + format;
+				}
+				
+				var index = 0;
+				$("input[data-command='" + cmd + "']").each (function (a, b) {
+					var paramname = $(b).attr ("data-param");
+					var paramvalue = $("#" + cmd + "-" + paramname + "-field").val ();
+					console.log (cmd, paramname, paramvalue, "#" + cmd + "-" + paramname + "-field");
+					if ((paramvalue == null) || (paramvalue == "")) {
+						var description = $(b).attr ("data-description");
+						paramvalue = "&lt;" + description + "&gt;";
+					}
+					s += index > 0? "&": "?";
+					s += paramname + "=" + paramvalue;
+					++index;
+				});
+				$("#" + id).attr ("href", s);
+				$("#" + id).html (s);
+			}
+			
+			function updateParam (event) {
+				if (event.type == "keyup") {
+					var inp = $(event.target);
+					var value = inp.val ();
+					var id = inp.attr ("data-command");
+//					console.log (event.type, id, value);
+					updatePathURL (id + "-path-url");
+					updateParamURL (id + "-param-url");
+				}
+			}
+			
+			function gotoCommand (select) {
+				console.log ($(select).val ());
+			}
+		</script>
+	</body>
+</html>
