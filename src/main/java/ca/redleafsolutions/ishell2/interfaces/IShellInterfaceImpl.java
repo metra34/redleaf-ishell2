@@ -79,8 +79,12 @@ public abstract class IShellInterfaceImpl implements IShellInterface {
 
 	protected IShellObject execute (IShellRequestSingle request) throws IShellException {
 		long tic = System.nanoTime ();
-		if ((mapping != null) && !mapping.contains (request.getPath ().get (0))) {
-			throw new IShellException.AccessRestricted (request);
+		
+		if (mapping != null) {
+			String path0 = request.getPath ().size () > 0? request.getPath ().get (0): "";
+			if (!path0.isEmpty () && !mapping.contains (path0)) {
+				throw new IShellException.AccessRestricted (request);
+			}
 		}
 
 		IShellObject result = null;
