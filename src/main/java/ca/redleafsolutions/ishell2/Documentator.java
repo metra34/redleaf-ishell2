@@ -17,6 +17,7 @@ import ca.redleafsolutions.ishell2.annotations.MethodDescription;
 import ca.redleafsolutions.ishell2.annotations.ParameterDescriptions;
 import ca.redleafsolutions.ishell2.annotations.ParameterNames;
 
+@Deprecated
 public class Documentator {
 	@MethodDescription ("Document the API of a class")
 	@ParameterNames ("ishellpath")

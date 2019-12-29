@@ -17,16 +17,20 @@ public class IShellRequestHTTP extends IShellRequestSingle {
 		super (parsed);
 	}
 
+	@SuppressWarnings ("rawtypes")
 	public void setRequestHeaders (ObjectMap headers) {
-		this.requestHeaders = headers;
-		for (String key:requestHeaders.keySet ()) {
-			List<String> list = (List<String>)requestHeaders.get (key);
-			if (list.size () == 1) {
-				Object value = list.get (0);
-				requestHeaders.put (key, value);
+		this.requestHeaders = new ObjectMap ();
+		for (String key:headers.keySet ()) {
+			Object o = headers.get (key);
+			if (o instanceof List) {
+				if (((List)o).size () == 1) {
+					o = ((List)o).get (0);
+				}
 			}
+			requestHeaders.put (key, o);
 		}
 	}
+	
 	public ObjectMap getRequestHeaders () {
 		return requestHeaders;
 	}

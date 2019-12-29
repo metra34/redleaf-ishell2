@@ -535,7 +535,8 @@ public class InternalHTTPServer extends IShellHTTPInterface {
 								": Downloading " + ds.length () + " bytes as " + ds.getFilename ());
 						ds.close ();
 					} else if (respobj.getObject () instanceof IShellHTTPResponse) {
-						IShellHTTPResponse httpresponse = (IShellHTTPResponse)respobj.getObject ();
+						@SuppressWarnings ("unchecked")
+						IShellHTTPResponse<? extends Object> httpresponse = (IShellHTTPResponse<? extends Object>)respobj.getObject ();
 						for (Entry<String, Object> entry:httpresponse.getHeaders ().entrySet ()) {
 							map.set (entry.getKey (), (String)entry.getValue ());
 						}
