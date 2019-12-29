@@ -36,6 +36,7 @@ import ca.redleafsolutions.ObjectMap;
 import ca.redleafsolutions.SingletonException;
 import ca.redleafsolutions.TemplateUtils;
 import ca.redleafsolutions.ishell2.IShellException;
+import ca.redleafsolutions.ishell2.IShellHTTPResponse;
 import ca.redleafsolutions.ishell2.IShellInputStream;
 import ca.redleafsolutions.ishell2.IShellObject;
 import ca.redleafsolutions.ishell2.IShellObject.ExecutedObject;
@@ -533,6 +534,11 @@ public class InternalHTTPServer extends IShellHTTPInterface {
 						iLogger.logIShellResponse (reqid,
 								": Downloading " + ds.length () + " bytes as " + ds.getFilename ());
 						ds.close ();
+					} else if (respobj.getObject () instanceof IShellHTTPResponse) {
+						IShellHTTPResponse httpresponse = (IShellHTTPResponse)respobj.getObject ();
+						for (Entry<String, Object> entry:httpresponse.getHeaders ().entrySet ()) {
+							map.set (entry.getKey (), (String)entry.getValue ());
+						}
 					} else if (respobj.getObject () instanceof IShellRedirectable) {
 						IShellRedirectable redirect = (IShellRedirectable)respobj.getObject ();
 						map.add ("Location", redirect.getUrl ().toString ());
