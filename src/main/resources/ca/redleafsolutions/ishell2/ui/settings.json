@@ -1,0 +1,42 @@
+{
+	"jquery": {
+		"js": "https://code.jquery.com/jquery-3.4.1.min.js"
+	},
+	"jquery-ui": {
+		"js": "https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+	},
+	"bootstrap": {
+		"css": "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css",
+		"js": "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+	},
+	"fontawesome": {
+		"css": "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+	},
+	"datatables": {
+		"css": "https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/datatables.min.css",
+		"js": "https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/datatables.min.js"
+	},
+	"jquery-scroller": {
+		"css": "https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css",
+		"js": "https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"
+	},
+	"bootstrap-datepicker": {
+		"css": "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.standalone.min.css",
+		"js": "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"
+	},
+	"popper-js": {
+		"js": "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"
+	},
+	"moment": {
+		"js": "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"
+	},
+	"moment-timezone": {
+		"js": "https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.25/moment-timezone.min.js"
+	},
+	"moment-timezone-data": {
+		"js": "https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.25/moment-timezone-with-data-10-year-range.min.js"
+	},
+	"google-api": {
+		"js": "https://apis.google.com/js/platform.js"
+	}
+}
