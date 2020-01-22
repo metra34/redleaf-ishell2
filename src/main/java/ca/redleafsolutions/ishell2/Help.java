@@ -16,7 +16,7 @@ import ca.redleafsolutions.json.JSONItem;
 import ca.redleafsolutions.json.JSONValidationException;
 import ca.redleafsolutions.json.JSONWritable;
 
-public class Help implements JSONWritable {
+public class Help implements JSONWritable, HTMLWritable{
 	private Map<String, Object> extensions;
 
 	public Help (Map<String, Object> extensions) {
@@ -39,5 +39,15 @@ public class Help implements JSONWritable {
 			json.put (key, extensions.get (key).getClass ().getCanonicalName ());
 		}
 		return json;
+	}
+
+	@Override
+	public String toHTML() {
+		StringBuffer s = new StringBuffer();
+		s.append("<html><body>");
+		for (String key:extensions.keySet ()) {
+			s.append("<li>").append(key).append (": ").append (extensions.get (key).getClass ().getCanonicalName ());
+		}
+		return s.toString();
 	}
 }

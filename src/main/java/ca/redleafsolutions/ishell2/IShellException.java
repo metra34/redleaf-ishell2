@@ -14,7 +14,9 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import ca.redleafsolutions.ishell2.annotations.IShellInvisible;
 
@@ -152,6 +154,17 @@ public class IShellException extends Exception {
 			this.options = options;
 		}
 		
+		public KeyNotFound(String name, Set<String> options) {
+			super ("Key '" + name + "' was not found");
+			this.key = name;
+			String[] list = new String[options.size()];
+			int i = 0;
+			for (String option:options) {
+				list[i++] = option;
+			}
+			this.options = list;
+		}
+
 		public String getKey () {
 			return key;
 		}

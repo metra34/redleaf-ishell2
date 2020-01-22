@@ -1,7 +1,6 @@
 package ca.redleafsolutions.ishell2.ui;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 
 import ca.redleafsolutions.ObjectMap;
@@ -33,12 +32,12 @@ public class HTMLUI implements HTMLWritable, IShellRequestConsumer {
 		try {
 			return TemplateUtils.evaluate (is, map);
 		} finally {
-			if (is != null)
-				try {
-					is.close ();
-				} catch (IOException e) {
-					// do nothing
-				}
+			// if (is != null)
+			// 	try {
+			// 		is.close ();
+			// 	} catch (IOException e) {
+			// 		// do nothing
+			// 	}
 		}
 	}
 
