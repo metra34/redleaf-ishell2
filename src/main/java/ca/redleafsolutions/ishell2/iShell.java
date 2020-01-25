@@ -30,6 +30,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import ca.redleafsolutions.ObjectMap;
+import ca.redleafsolutions.ResourceLocator;
 import ca.redleafsolutions.SingletonException;
 import ca.redleafsolutions.TemplateUtils;
 import ca.redleafsolutions.Trace;
