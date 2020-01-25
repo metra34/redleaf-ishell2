@@ -24,7 +24,7 @@ public class MimeHandler {
 	private Map<String, Object> params;
 	private String boundary;
 	private Object body;
-	private String contentType;
+	private String contentType = "";
 
 	public MimeHandler() {
 	}
