@@ -48,7 +48,7 @@ public class MimeHandler {
 	}
 
 	public boolean isMultiPart() {
-		return contentType.startsWith("multipart");
+		return contentType.startsWith("multipart/");
 	}
 	public boolean isText() {
 		return contentType.startsWith("text/");

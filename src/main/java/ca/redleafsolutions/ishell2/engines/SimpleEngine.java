@@ -47,6 +47,7 @@ import ca.redleafsolutions.ishell2.annotations.ParameterNames;
 import ca.redleafsolutions.ishell2.logs.iLogger;
 import ca.redleafsolutions.json.JSONItem;
 import ca.redleafsolutions.json.JSONValidationException;
+import ca.redleafsolutions.json.JSONWritable;
 
 public class SimpleEngine implements IShellEngine {
 	protected ObjectMap extensions = new ObjectMap();
@@ -458,9 +459,15 @@ public class SimpleEngine implements IShellEngine {
 				if (!paramType.isAssignableFrom(File.class)) {
 					throw new IllegalArgumentException("argument type mismatch. Expected File but get " + paramType);
 				}
-			} else if (paramvalue instanceof JSONItem) {
-				if (!paramType.isAssignableFrom(JSONItem.class)) {
-					throw new IllegalArgumentException("argument type mismatch. Expected JSONItem but get " + paramType);
+			} else if (paramType.isAssignableFrom(JSONItem.class)) {
+				try {
+					if (paramvalue instanceof String) {
+						paramvalue = JSONItem.parse((String) paramvalue);
+					} else if (paramvalue instanceof JSONWritable) {
+						paramvalue = ((JSONWritable) paramvalue).toJSON();
+					}
+				} catch (JSONValidationException e) {
+					// leave it for later exception handling
 				}
 			} else if (Date.class.isAssignableFrom(paramType)) {
 				try {
@@ -500,6 +507,26 @@ public class SimpleEngine implements IShellEngine {
 				return;
 			}
 			throw new IllegalAccessException("Date type is not assignable from " + value.getClass().getName());
+		} else if ("JSONItem".equalsIgnoreCase(typestr)) {
+			if (value instanceof String) {
+				try {
+					value = JSONItem.parse((String) value);
+				} catch (JSONValidationException e) {
+					throw new IllegalAccessException("JSONItem failed to assign due to " + e);
+				}
+			}
+			if (value instanceof JSONItem) {
+				field.set(res, value);
+				return;
+			} else if (value instanceof JSONWritable) {
+				try {
+					field.set(res, ((JSONWritable) value).toJSON());
+				} catch (JSONValidationException e) {
+					throw new IllegalAccessException("JSONItem " + field.getName() + " failed to assign due to " + e);
+				}
+				return;
+			}
+			throw new IllegalAccessException("JSONItem type is not assignable from " + value.getClass().getName());
 		}
 
 		String sval = (String) value;
