@@ -46,7 +46,7 @@ public class APIInterface extends APIResponse<JSONWritable> implements JSONWrita
 						}
 					}
 					mj.put ("return-type", rettype.getSimpleName ());
-					mj.put ("return-pacakge", rettype.getPackageName ());
+					mj.put ("return-pacakge", rettype.getPackage().getName ());
 
 					MethodDescription description = method.getAnnotation (MethodDescription.class);
 					if (description != null) {
@@ -65,7 +65,7 @@ public class APIInterface extends APIResponse<JSONWritable> implements JSONWrita
 						paramsj.put (pj);
 						pj.put ("pname", param.getName ());
 						pj.put ("class", param.getType ().getSimpleName ());
-						pj.put ("package", param.getType ().getPackageName ());
+						pj.put ("package", param.getType ().getPackage().getName ());
 						if (pnames != null) {
 							if (index < pnames.value ().length) {
 								pj.put ("name", pnames.value ()[index]);
