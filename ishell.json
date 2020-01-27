@@ -1,0 +1,49 @@
+ {
+	 "target": "local",
+    "extend": [
+        {
+            "name": "trace",
+            "class": "ca.redleafsolutions.Trace",
+            "params": {
+                "on": true
+            }
+        },
+        {
+            "name": "http",
+            "class": "ca.redleafsolutions.ishell2.HTTPTest"
+        }
+    ],
+    "engine": {
+        "class": "ca.redleafsolutions.ishell2.engines.JSR223"
+    },
+    "interface": [
+        {
+            "type": "http",
+            "port": 8027,
+            "routing": {
+                "root": {
+                    "directory": "www/htdoc",
+                    "type": "template"
+                }
+            },
+			"ui": {
+                "extension": "ui",
+                "params": {
+                    "settings-file": "jslibs/settings.json",
+                    "root": [
+                        "jslibs/libraries",
+                        "templates"
+                    ],
+                    "cache": {
+                        "root": "cache",
+                        "enabled": false
+                    },
+                    "own-extension": "ui",
+                    "notifications": {
+                        "port": 2780
+                    }
+                }
+            }
+        }
+    ]
+}

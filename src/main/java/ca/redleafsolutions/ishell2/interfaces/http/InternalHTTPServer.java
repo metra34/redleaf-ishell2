@@ -465,7 +465,7 @@ public class InternalHTTPServer extends IShellHTTPInterface {
 
 				// parse request for POST parameters of Multipart data
 				mime.parseRequest (t.getRequestBody ());
-				parsed.addParams (mime.getParams ());
+				parsed.withMime (mime);
 
 				if (!parsed.hasFormatExtension () && parsed.getParams ().size () <= 0) {
 					// otherwise: conform to / treminated format

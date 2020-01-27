@@ -23,6 +23,7 @@ import java.util.Map;
 
 import ca.redleafsolutions.ObjectMap;
 import ca.redleafsolutions.ishell2.IShellException.KeyNotFound;
+import ca.redleafsolutions.ishell2.interfaces.http.MimeHandler;
 import ca.redleafsolutions.ishell2.renderers.RendererFactory;
 
 public class ParseRequestResults {
@@ -30,6 +31,7 @@ public class ParseRequestResults {
 	private ObjectMap params;
 	private String outputFormat;
 	private String pathString;
+	private Object body;
 
 	//
 	// public ParseRequestResults (List<String> path, Map<String, String>
@@ -45,6 +47,10 @@ public class ParseRequestResults {
 
 	public ObjectMap getParams () {
 		return params;
+	}
+
+	public Object getBody () {
+		return body;
 	}
 
 	public Object getParam (String key) throws KeyNotFound {
@@ -219,5 +225,11 @@ public class ParseRequestResults {
 
 	public void addParams (Map<String, Object> params) {
 		this.params.putAll (params);
+	}
+	
+	public ParseRequestResults withMime (MimeHandler mime) {
+		addParams(mime.getParams ());
+		this.body = mime.getBody();
+		return this;
 	}
 }

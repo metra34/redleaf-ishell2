@@ -8,6 +8,7 @@ import ca.redleafsolutions.json.JSONValidationException;
 
 public class IShellRequestHTTP extends IShellRequestSingle {
 	private ObjectMap requestHeaders;
+	private Object body;
 
 	public IShellRequestHTTP(JSONItem json) throws JSONValidationException {
 		super(json);
@@ -15,8 +16,13 @@ public class IShellRequestHTTP extends IShellRequestSingle {
 
 	public IShellRequestHTTP (ParseRequestResults parsed) {
 		super (parsed);
+		this.body = parsed.getBody();
 	}
 
+	public Object getBody () {
+		return body;
+	}
+	
 	@SuppressWarnings ("rawtypes")
 	public void setRequestHeaders (ObjectMap headers) {
 		this.requestHeaders = new ObjectMap ();
